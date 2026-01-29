@@ -27,6 +27,10 @@ const uploadJobSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    matchedCount: { type: Number, default: 0 },
+    partialCount: { type: Number, default: 0 },
+    unmatchedCount: { type: Number, default: 0 },
+    duplicateCount: { type: Number, default: 0 },
     errorLog: {
         type: String
     }

@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const reconRoutes = require('./routes/reconRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 dotenv.config();
 connectDB();
@@ -17,6 +19,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/recon', reconRoutes);
+app.use('/api/audit', auditRoutes);
 
 app.get('/', (req, res) => {
     res.send('Smart Reconciliation System API');
