@@ -8,6 +8,7 @@ const reconcileJob = async (jobId) => {
     const records = await Record.find({ uploadJob: jobId });
     let matchedCount = 0;
     let unmatchedCount = 0;
+    let partialCount = 0;
 
     for (const record of records) {
         const fileTxId = record.data.get('transactionId') || record.data.get('TransactionID') || record.data.get('id');
@@ -43,7 +44,7 @@ const reconcileJob = async (jobId) => {
         } else if (amountDiff <= tolerance) {
             record.reconciliationStatus = 'Partial';
             record.reconciliationDetails = `Amount variance within 2% (Diff: ${amountDiff})`;
-            matchedCount++;
+            partialCount++;
         } else {
             record.reconciliationStatus = 'Unmatched';
             record.reconciliationDetails = `Amount mismatch > 2% (Sys: ${sysRecord.amount}, File: ${fileAmount})`;
@@ -53,9 +54,9 @@ const reconcileJob = async (jobId) => {
         await record.save();
     }
 
-    console.log(`Reconciliation complete. Matched: ${matchedCount}, Unmatched: ${unmatchedCount}`);
+    console.log(`Reconciliation complete. Matched: ${matchedCount}, Partial: ${partialCount}, Unmatched: ${unmatchedCount}`);
 
-    return { matchedCount, unmatchedCount };
+    return { matchedCount, partialCount, unmatchedCount };
 };
 
 module.exports = { reconcileJob };
