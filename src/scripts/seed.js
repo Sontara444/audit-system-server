@@ -8,38 +8,43 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const seedData = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('MongoDB Connected');
+        console.log('MongoDB Connected (' + process.env.MONGO_URI + ')');
 
         await SystemRecord.deleteMany({});
         console.log('Cleared existing System Records');
 
-        const records = [
-            {
-                transactionId: "TXN001",
+        const records = [];
+
+        // 1. Exact Matches (for TXN101 - TXN115)
+        for (let i = 101; i <= 115; i++) {
+            records.push({
+                transactionId: `TXN${i}`,
                 amount: 1000,
-                date: new Date("2023-10-01"),
-                description: "System Payment A",
+                date: new Date("2023-11-01"),
+                description: `System Record Exact ${i}`,
                 status: "Pending"
-            },
-            {
-                transactionId: "TXN002",
-                amount: 2000,
-                date: new Date("2023-10-02"),
-                description: "System Payment B (Expect Partial with 2030)",
+            });
+        }
+
+        // 2. Partial Matches (for TXN116 - TXN130) (System has 1000, File will have 1010 -> 1% diff)
+        for (let i = 116; i <= 130; i++) {
+            records.push({
+                transactionId: `TXN${i}`,
+                amount: 1000,
+                date: new Date("2023-11-01"),
+                description: `System Record Partial ${i}`,
                 status: "Pending"
-            },
-            {
-                transactionId: "TXN004",
-                amount: 5000,
-                date: new Date("2023-10-04"),
-                description: "System Payment D (Not in file)",
-                status: "Pending"
-            }
-        ];
+            });
+        }
+
+        // 3. Unmatched (TXN131 - TXN140) - Do NOT add to system.
+        // File will have these, but System won't. -> Result: Unmatched (ID not found)
+
+        // 4. Duplicate (TXN101 - TXN110 reused in file) - System already has TXN101-110 from step 1.
+        // This affects the FILE, not the system.
 
         await SystemRecord.insertMany(records);
-        console.log('System Records Seeded:');
-        console.table(records);
+        console.log(`Seeded ${records.length} System Records (TXN101 - TXN130)`);
 
         process.exit();
     } catch (error) {
