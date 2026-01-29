@@ -16,9 +16,13 @@ const triggerRecon = async (req, res) => {
 
         reconcileJob(jobId)
             .then(stats => {
+                console.log("Recon Stats received:", stats);
                 UploadJob.findByIdAndUpdate(jobId, {
                     status: 'Completed',
-                    ...stats
+                    matchedCount: stats.matchedCount || 0,
+                    partialCount: stats.partialCount || 0,
+                    unmatchedCount: stats.unmatchedCount || 0,
+                    duplicateCount: stats.duplicateCount || 0
                 }).then(() => {
                     logAction(req.user._id, 'RECON_COMPLETED', jobId, 'UploadJob', { status: 'Completed', stats: JSON.stringify(stats) });
                 });
