@@ -9,6 +9,8 @@ const reconcileJob = async (jobId) => {
     let matchedCount = 0;
     let unmatchedCount = 0;
     let partialCount = 0;
+    let duplicateCount = 0;
+    const seenIds = new Set();
 
     for (const record of records) {
         const fileTxId = record.data.get('transactionId') || record.data.get('TransactionID') || record.data.get('id');
@@ -21,6 +23,16 @@ const reconcileJob = async (jobId) => {
             unmatchedCount++;
             continue;
         }
+
+        if (seenIds.has(fileTxId)) {
+            record.reconciliationStatus = 'Duplicate';
+            record.reconciliationDetails = 'Duplicate Transaction ID in upload file';
+            await record.save();
+            duplicateCount++;
+            continue;
+        }
+
+        seenIds.add(fileTxId);
 
         const fileAmount = parseFloat(fileAmountStr.replace(/[^0-9.-]+/g, ""));
 
@@ -54,9 +66,9 @@ const reconcileJob = async (jobId) => {
         await record.save();
     }
 
-    console.log(`Reconciliation complete. Matched: ${matchedCount}, Partial: ${partialCount}, Unmatched: ${unmatchedCount}`);
+    console.log(`Reconciliation complete. Matched: ${matchedCount}, Partial: ${partialCount}, Unmatched: ${unmatchedCount}, Duplicate: ${duplicateCount}`);
 
-    return { matchedCount, partialCount, unmatchedCount };
+    return { matchedCount, partialCount, unmatchedCount, duplicateCount };
 };
 
 module.exports = { reconcileJob };
