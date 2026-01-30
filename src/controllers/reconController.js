@@ -21,6 +21,8 @@ const triggerRecon = async (req, res) => {
 
         logAction(req.user._id, 'RECON_STARTED', jobId, 'UploadJob', { status: 'Started' }, req.ip);
 
+        await UploadJob.findByIdAndUpdate(jobId, { status: 'Processing' });
+
         reconcileJob(jobId)
             .then(stats => {
                 console.log("Recon Stats received:", stats);
