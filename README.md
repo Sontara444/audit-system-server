@@ -19,6 +19,26 @@ This project follows a **layered architecture** to ensure separation of concerns
     *   **Unmatched**: Transaction ID does not exist in the system or Amount difference is too large.
 4.  **Audit**: Key actions (Upload, Recon, Flagging) are logged to `AuditLog`.
 
+## Security & Roles
+The system implements Role-Based Access Control (RBAC) using JWT middleware:
+
+### Roles
+*   **Admin**:
+    *   Access to System Audit Logs (`GET /audit`).
+    *   Global visibility of all Uploads and Reconciliation jobs.
+    *   Can perform all operational actions.
+*   **Analyst**:
+    *   Can upload files (`POST /upload`).
+    *   Can trigger reconciliation (`POST /recon/:id`).
+    *   Can flag records (`PUT /recon/records/:id`).
+*   **Viewer**:
+    *   **Read-Only** access to global Dashboards and Reconciliation details.
+    *   Blocked from performing any write operations.
+
+### API Security
+*   **Authentication**: All routes (except Login/Register) require a valid Bearer token.
+*   **Authorization**: Sensitive routes (`triggerRecon`, `flagRecord`, `getAuditLogs`) are protected by explicit role checks via `authorize(...)` middleware.
+
 ## Assumptions
 *   **CSV Format**: The system expects CSV headers typically like `TransactionID`, `Amount`, `Date`. The processor attempts to utilize case-insensitive matching for these common fields.
 *   **Currency**: It is assumed that the uploaded file and the system records share the same currency. No conversion is performed.

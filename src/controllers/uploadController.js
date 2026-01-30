@@ -34,8 +34,8 @@ const getUploads = async (req, res) => {
     try {
         let query = { user: req.user._id };
 
-        // Admin sees all uploads
-        if (req.user.role === 'Admin') {
+        // Admin and Viewer sees all uploads (Global Read Access)
+        if (req.user.role === 'Admin' || req.user.role === 'Viewer') {
             query = {};
         }
 

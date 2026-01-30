@@ -52,8 +52,8 @@ const getReconStats = async (req, res) => {
         const { jobId } = req.params;
         let query = { _id: jobId };
 
-        // If not Admin, ensure user owns the job
-        if (req.user.role !== 'Admin') {
+        // Admin and Viewer can access any job
+        if (req.user.role !== 'Admin' && req.user.role !== 'Viewer') {
             query.user = req.user._id;
         }
 
@@ -82,6 +82,16 @@ const getReconRecords = async (req, res) => {
     try {
         const { jobId } = req.params;
         const { status, page = 1, limit = 50 } = req.query;
+
+        // Verify user has access to this job
+        let jobQuery = { _id: jobId };
+        if (req.user.role !== 'Admin' && req.user.role !== 'Viewer') {
+            jobQuery.user = req.user._id;
+        }
+        const job = await UploadJob.findOne(jobQuery);
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found or unauthorized' });
+        }
 
         const query = { uploadJob: jobId };
         if (status && status !== 'All') {
