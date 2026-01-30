@@ -43,6 +43,19 @@ const seedData = async () => {
         // 4. Duplicate (TXN101 - TXN110 reused in file) - System already has TXN101-110 from step 1.
         // This affects the FILE, not the system.
 
+        // 3. User's Data Pattern (TXN400 - TXN450)
+        // Observed Pattern: TXN4xx -> Amount = (xx + 10) * 100
+        for (let i = 400; i <= 450; i++) {
+            const suffix = i - 400;
+            records.push({
+                transactionId: `TXN${i}`,
+                amount: (suffix + 10) * 100,
+                date: new Date("2023-12-01"),
+                description: `System Record User Match ${i}`,
+                status: "Pending"
+            });
+        }
+
         await SystemRecord.insertMany(records);
         console.log(`Seeded ${records.length} System Records (TXN101 - TXN130)`);
 
