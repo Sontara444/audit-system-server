@@ -6,7 +6,14 @@ const { logAction } = require('../services/auditService');
 const triggerRecon = async (req, res) => {
     try {
         const { jobId } = req.params;
-        const job = await UploadJob.findOne({ _id: jobId, user: req.user._id });
+        let query = { _id: jobId };
+
+        // If not Admin, ensure user owns the job
+        if (req.user.role !== 'Admin') {
+            query.user = req.user._id;
+        }
+
+        const job = await UploadJob.findOne(query);
 
         if (!job) {
             return res.status(404).json({ message: 'Upload job not found' });
@@ -43,7 +50,14 @@ const triggerRecon = async (req, res) => {
 const getReconStats = async (req, res) => {
     try {
         const { jobId } = req.params;
-        const job = await UploadJob.findOne({ _id: jobId, user: req.user._id });
+        let query = { _id: jobId };
+
+        // If not Admin, ensure user owns the job
+        if (req.user.role !== 'Admin') {
+            query.user = req.user._id;
+        }
+
+        const job = await UploadJob.findOne(query);
 
         if (!job) {
             return res.status(404).json({ message: 'Upload job not found' });

@@ -32,7 +32,14 @@ const uploadFile = async (req, res) => {
 
 const getUploads = async (req, res) => {
     try {
-        const uploads = await UploadJob.find({ user: req.user._id }).sort({ createdAt: -1 });
+        let query = { user: req.user._id };
+
+        // Admin sees all uploads
+        if (req.user.role === 'Admin') {
+            query = {};
+        }
+
+        const uploads = await UploadJob.find(query).sort({ createdAt: -1 });
         res.json(uploads);
     } catch (error) {
         console.error(error);
